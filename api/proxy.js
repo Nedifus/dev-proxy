@@ -1,19 +1,15 @@
 export default async function handler(req, res) {
-  const target = "https://httpbin.org" + req.url.replace("/api/proxy", "");
+  const { url } = req.query;
+
+  if (!url) {
+    return res.status(400).json({ error: "Missing url parameter" });
+  }
 
   try {
-    const response = await fetch(target, {
-      method: req.method,
-      headers: req.headers,
-      body: req.method !== "GET" ? JSON.stringify(req.body) : undefined
-    });
-
+    const response = await fetch(url);
     const data = await response.text();
-
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.status(response.status).send(data);
-
-  } catch (err) {
-    res.status(500).send("Proxy Error");
+    res.status(200).send(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }
